@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<h1 class="text-center my-4">Buy some Pokemon Cards here!!</h1>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <img src="{% static 'store/img/pikachu_card.jpg' %}" class="card-img-top" alt="Pikachu Card" style="width: 90%; margin: 0 auto;">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Pikachu Card</h5>
+                    <p class="card-text">Price: $10</p>
+                    <button class="btn btn-primary">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <img src="{% static 'store/img/charizard_card.jpg' %}" class="card-img-top" alt="Charizard Card" style="width: 90%; margin: 0 auto;">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Charizard Card</h5>
+                    <p class="card-text">Price: $25</p>
+                    <button class="btn btn-primary">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <img src="{% static 'store/img/bulbasur_card.jpg' %}" class="card-img-top" alt="Bulbasaur Card" style="width: 90%; margin: 0 auto;">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Bulbasaur Card</h5>
+                    <p class="card-text">Price: $8</p>
+                    <button class="btn btn-primary">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <img src="{% static 'store/img/squirtle_card.jpg' %}" class="card-img-top" alt="Squirtle Card" style="width: 90%; margin: 0 auto;">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Squirtle Card</h5>
+                    <p class="card-text">Price: $7</p>
+                    <button class="btn btn-primary">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
