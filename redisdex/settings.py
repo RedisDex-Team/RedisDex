@@ -142,3 +142,5 @@ CACHES = {
 # Redis para sesiones
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
+SESSION_COOKIE_AGE = 1800 
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False

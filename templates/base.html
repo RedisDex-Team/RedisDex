@@ -4,64 +4,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Base layout with navbar">
+    <meta name="description" content="RedisDex - Pokémon card store">
     <meta name="author" content="RedisDex Team">
     <title>RedisDex</title>
     <link rel="icon" href="{% static 'store/img/logo_redisdex.png' %}" type="image/png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f9f9fb;
+        }
+        .navbar-nav .nav-link {
+            transition: all 0.2s;
+        }
+        .navbar-nav .nav-link:hover,
+        .navbar-nav .nav-link.active {
+            color: #0d6efd !important;
+            font-weight: 500;
+        }
+        footer {
+            background-color: #f8f9fa;
+            padding: 1rem 0;
+            margin-top: 60px;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light p-3 ps-5 shadow-sm">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'home' %}">RedisDex</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">Home</a>
-                    </li>
-                    
-                    {% if not user.is_authenticated %}
 
-                    <li class="nav-item">
-                        <a class="nav-link" href="/accounts/login">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'register' %}">Register</a>
-                    </li>
-                    {% endif %}
-                    
-                    {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'shop' %}">Shop</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-                    </li>
-                    {% endif %}
- 
-                </ul>
-                <ul class="navbar-nav ms-auto me-5">
-                    {% if user.is_authenticated %}
-                    <li class="nav-item d-flex align-items-center">
-                        <span class="navbar-text me-3">Hello, {{ user.username }}</span>
-                        <a class="nav-link" href="{% url 'cart' %}">
-                            <i class="bi bi-cart"></i> Cart
-                        </a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
+<nav class="navbar navbar-expand-lg navbar-light bg-white p-3 shadow-sm">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="{% url 'home' %}">RedisDex</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+                {% if user.is_authenticated %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'shop' %}">Shop</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+                {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register</a></li>
+                {% endif %}
+            </ul>
+
+            <form method="get" action="{% url 'shop' %}" class="d-flex me-3" role="search">
+                <input class="form-control form-control-sm me-2" type="search" name="q" placeholder="Search cards..." aria-label="Search" value="{{ request.GET.q }}">
+                <button class="btn btn-outline-primary btn-sm" type="submit"><i class="bi bi-search"></i></button>
+            </form>
+
+            {% if user.is_authenticated %}
+            <ul class="navbar-nav">
+                <li class="nav-item d-flex align-items-center">
+                    <span class="navbar-text me-3">
+                        Hello, <a href="{% url 'profile' %}" class="fw-semibold text-primary text-decoration-none">{{ user.username }}</a>
+                    </span>
+                    <a class="nav-link" href="{% url 'cart' %}">
+                        <i class="bi bi-cart fs-5"></i>
+                    </a>
+                </li>
+            </ul>
+            {% endif %}
         </div>
-    </nav>
-    <div class="container mt-4 p-4 ">
-        {% block content %}
-        <!-- Content goes here -->
-        {% endblock %}
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</nav>
+
+<div class="container mt-4">
+    {% block content %}{% endblock %}
+</div>
+
+<footer>
+    <div class="container">
+        &copy; {{ now.year }} RedisDex · Made with ❤️ for Pokémon fans
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

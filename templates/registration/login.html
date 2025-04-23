@@ -1,25 +1,24 @@
 {% extends 'base.html' %}
 {% block content %}
-
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header text-center">
-                    <h1>Login</h1>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        {{ form.as_p }}
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Entrar</button>
-                        </div>
-                    </form>
-                </div>
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 75vh;">
+    <div class="card p-4 shadow" style="width: 100%; max-width: 400px;">
+        <h4 class="text-center mb-4">Login to RedisDex</h4>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                {{ form.username.label_tag }}
+                {{ form.username }}
             </div>
+            <div class="mb-3">
+                {{ form.password.label_tag }}
+                {{ form.password }}
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
+        <div class="text-center mt-3">
+            <a href="{% url 'password_reset' %}" class="small text-decoration-none">Forgot your password?</a><br>
+            <a href="{% url 'register' %}" class="small text-decoration-none">Don't have an account? Register</a>
         </div>
     </div>
 </div>
-
 {% endblock %}
