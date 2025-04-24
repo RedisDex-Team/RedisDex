@@ -1,29 +1,39 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container mt-5">
-    <div class="text-center">
-        <h1 class="display-4">Welcome to the RedisDex</h1>
-        <p class="lead">Your ultimate Pokémon card store. Discover, collect, and trade your favorite cards!</p>
-    </div>
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Explore Our Collection</h5>
-                    <p class="card-text">Browse through a vast collection of Pokémon cards, from classic to the latest editions.</p>
-                    <a href="#" class="btn btn-primary">Start Exploring</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Trade and Expand</h5>
-                    <p class="card-text">Connect with other collectors and trade cards to complete your collection.</p>
-                    <a href="#" class="btn btn-success">Learn More</a>
-                </div>
-            </div>
+
+<!-- Hero Banner -->
+<div class="py-5 text-center bg-light shadow-sm rounded-3">
+    <div class="container">
+        <h1 class="display-4 fw-bold">Welcome to RedisDex</h1>
+        <p class="lead text-muted">Collect, trade, and explore the ultimate Pokémon card store powered by Redis.</p>
+        <div class="mt-4">
+            <a href="{% url 'shop' %}" class="btn btn-primary btn-lg">Browse Cards</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'profile' %}" class="btn btn-outline-secondary btn-lg ms-2">Your Profile</a>
+            {% endif %}
         </div>
     </div>
 </div>
+
+<!-- Features Section -->
+<div class="container my-5">
+    <div class="row text-center">
+        <div class="col-md-4 mb-4">
+            <i class="bi bi-search fs-2 text-primary"></i>
+            <h4 class="mt-2">Search & Discover</h4>
+            <p class="text-muted">Find any card instantly. Filter by rarity, type, or price.</p>
+        </div>
+        <div class="col-md-4 mb-4">
+            <i class="bi bi-cart-plus fs-2 text-success"></i>
+            <h4 class="mt-2">Smart Cart</h4>
+            <p class="text-muted">Lightning-fast cart stored in Redis. Add, remove, and checkout with ease.</p>
+        </div>
+        <div class="col-md-4 mb-4">
+            <i class="bi bi-people fs-2 text-warning"></i>
+            <h4 class="mt-2">Connect & Trade</h4>
+            <p class="text-muted">Trade with other trainers and complete your collection together.</p>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
