@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from store.views import home, registro, shop, cart, test_session_view, add_to_cart, increase_qty, decrease_qty, place_order, profile_view, edit_profile, card_detail, clear_search_history
+from store.views import home, registro, shop, cart, test_session_view, add_to_cart, increase_qty, decrease_qty, place_order, profile_view, edit_profile, card_detail, clear_search_history, order_confirmation
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -34,7 +34,6 @@ urlpatterns = [
     path('profile/edit/', edit_profile, name='edit_profile'),
     path('card/<int:card_id>/', card_detail, name='card_detail'),
     path('profile/clear-search-history/', clear_search_history, name='clear_search_history'),
-
-
-
+    path('order/<int:order_id>/confirmation/', order_confirmation, name='order_confirmation'),
+    path('place-order/', place_order, name='place_order'),
 ]
