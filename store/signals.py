@@ -25,7 +25,7 @@ def load_recent_cards_from_redis(sender, user, request, **kwargs):
     redis = get_redis_connection("default")
     data = redis.get(f"user_recent_cards:{user.id}")
     if data:
-        try:
+        try:   
             request.session['recent_cards'] = json.loads(data)
             request.session.modified = True
         except Exception as e:

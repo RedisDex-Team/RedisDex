@@ -236,6 +236,16 @@ def card_detail(request, card_id):
         product = get_object_or_404(Card, id=card_id)
     
     stats = cache.get_product_stats(card_id)
+
+    recent = request.session.get('recent_cards', [])
+    if card_id in recent:
+         recent.remove(card_id)
+    recent.insert(0, card_id)
+    request.session['recent_cards'] = recent[:5]
+ 
+    if request.user.is_authenticated:
+        redis = get_redis_connection("default")
+        redis.set(f"user_recent_cards:{request.user.id}", json.dumps(recent), ex=86400)
     
     return render(request, 'store/card_detail.html', {
         'product': product,

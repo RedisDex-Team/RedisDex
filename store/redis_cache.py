@@ -51,7 +51,7 @@ class ProductCache:
         
         if product_data:
             product_data = json.loads(product_data)
-            product_data['sales_count'] += quantity
+            product_data['sales_count'] += int(quantity)
             product_data['last_updated'] = timezone.now().isoformat()
             self.redis.set(key, json.dumps(product_data))
             
@@ -124,3 +124,11 @@ class ProductCache:
             if product_data:
                 products.append(json.loads(product_data))
         return products
+
+    def invalidate_product(self, product_id):
+        """Invalidates the cache for a specific product"""
+        key = f"product:{product_id}"
+        self.redis.delete(key)
+        # Also invalidate the visits set
+        visit_key = f"product_visits:{product_id}"
+        self.redis.delete(visit_key)
