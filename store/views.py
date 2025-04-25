@@ -8,6 +8,7 @@ from .models import Card, Order, OrderItem
 from .forms import EditProfileForm
 from django_redis import get_redis_connection
 import json
+from .redis_cache import ProductCache
 
 # Create your views here.
 
@@ -30,11 +31,13 @@ def registro(request):
 
 def shop(request):
     query = request.GET.get('q', '').strip()
-    cards = Card.objects.all()
-
+    cache = ProductCache()
+    products = cache.get_all_products()
+    print(products)
+    
     if query:
-        cards = cards.filter(name__icontains=query)
-
+        products = [p for p in products if query.lower() in p['name'].lower()]
+        
         # Guardar término en historial Redis por usuario
         if request.user.is_authenticated:
             redis = get_redis_connection("default")
@@ -45,22 +48,30 @@ def shop(request):
                 redis.lpush(key, query)
                 redis.ltrim(key, 0, 9)  # máx 10 búsquedas
 
-    return render(request, 'store/shop.html', {'cards': cards})
-
+    return render(request, 'store/shop.html', {'cards': products})
 
 @login_required
 def add_to_cart(request, card_id):
-    card = get_object_or_404(Card, id=card_id)
+    cache = ProductCache()
+    product = cache.get_product(card_id)
+    
+    if not product:
+        # Si no está en caché, buscar en la base de datos y actualizar la caché
+        card = get_object_or_404(Card, id=card_id)
+        cache = ProductCache()
+        cache.cache_all_products()
+        product = cache.get_product(card_id)
+    
     cart = request.session.get('cart', {})
 
     if str(card_id) in cart:
         cart[str(card_id)]['qty'] += 1
     else:
         cart[str(card_id)] = {
-            'name': card.name,
-            'price': float(card.price),
+            'name': product['name'],
+            'price': product['price'],
             'qty': 1,
-            'image_url': card.image_url
+            'image_url': product['image_url']
         }
 
     request.session['cart'] = cart
@@ -119,27 +130,57 @@ def decrease_qty(request, card_id):
 
 @login_required
 def place_order(request):
-    cart = request.session.get('cart', {})
-    if not cart:
-        return redirect('cart')
+    if request.method == 'POST':
+        cart = request.session.get('cart', {})
+        total = 0
+        
+        # Primero calculamos el total
+        for item_id, item in cart.items():
+            card = Card.objects.get(id=item_id)
+            quantity = item['qty']
+            subtotal = card.price * quantity
+            total += subtotal
+        
+        # Creamos el pedido con el total calculado
+        order = Order.objects.create(user=request.user, total=total)
+        cache = ProductCache()
+        
+        # Luego agregamos los items
+        for item_id, item in cart.items():
+            card = Card.objects.get(id=item_id)
+            quantity = item['qty']
+            subtotal = card.price * quantity
+            
+            OrderItem.objects.create(
+                order=order,
+                name=card.name,
+                quantity=quantity,
+                price=card.price,
+                subtotal=subtotal
+            )
+            
+            # Registrar la venta en Redis
+            cache.record_sale(card.id, quantity)
+        
+        # Limpiar el carrito
+        request.session['cart'] = {}
+        request.session.modified = True
+        
+        # Actualizar la caché del carrito en Redis
+        if request.user.is_authenticated:
+            redis = get_redis_connection("default")
+            redis.delete(f"user_cart:{request.user.id}")
+        
+        return redirect('order_confirmation', order_id=order.id)
 
-    total = sum(item['qty'] * item['price'] for item in cart.values())
-    order = Order.objects.create(user=request.user, total=total)
-
-    for item in cart.values():
-        OrderItem.objects.create(
-            order=order,
-            name=item['name'],
-            quantity=item['qty'],
-            price=item['price'],
-            subtotal=item['qty'] * item['price']
-        )
-
-    request.session['cart'] = {}
-    request.session.modified = True
-
-    return render(request, 'store/order_success.html', {'order': order})
-
+@login_required
+def order_confirmation(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    items = OrderItem.objects.filter(order=order)
+    return render(request, 'store/order_confirmation.html', {
+        'order': order,
+        'items': items
+    })
 
 @login_required
 def profile_view(request):
@@ -187,17 +228,26 @@ def edit_profile(request):
     return render(request, 'store/edit_profile.html', {'form': form})
 
 
+@login_required
 def card_detail(request, card_id):
-    card = get_object_or_404(Card, id=card_id)
+    cache = ProductCache()
+    product = cache.get_product(card_id, request.user.id)  # Pasamos el user_id para contar visitas
+    if not product:
+        product = get_object_or_404(Card, id=card_id)
+    
+    stats = cache.get_product_stats(card_id)
 
     recent = request.session.get('recent_cards', [])
     if card_id in recent:
-        recent.remove(card_id)
+         recent.remove(card_id)
     recent.insert(0, card_id)
     request.session['recent_cards'] = recent[:5]
-
+ 
     if request.user.is_authenticated:
         redis = get_redis_connection("default")
         redis.set(f"user_recent_cards:{request.user.id}", json.dumps(recent), ex=86400)
-
-    return render(request, 'store/card_detail.html', {'card': card})
+    
+    return render(request, 'store/card_detail.html', {
+        'product': product,
+        'stats': stats
+    })
