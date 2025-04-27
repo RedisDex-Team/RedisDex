@@ -9,6 +9,7 @@ from .forms import EditProfileForm
 from django_redis import get_redis_connection
 import json
 from .redis_cache import ProductCache
+from django.contrib import messages
 
 # Create your views here.
 
@@ -133,20 +134,33 @@ def place_order(request):
     if request.method == 'POST':
         cart = request.session.get('cart', {})
         total = 0
+        valid_cart_items = {}
         
-        # Primero calculamos el total
+        # Validate and calculate total
         for item_id, item in cart.items():
-            card = Card.objects.get(id=item_id)
-            quantity = item['qty']
-            subtotal = card.price * quantity
-            total += subtotal
+            try:
+                card = Card.objects.get(id=item_id)
+                quantity = item['qty']
+                subtotal = card.price * quantity
+                total += subtotal
+                valid_cart_items[item_id] = item  # Only keep valid items
+            except Card.DoesNotExist:
+                # Remove invalid items from cart
+                continue
         
-        # Creamos el pedido con el total calculado
+        if not valid_cart_items:
+            messages.error(request, "No valid items found in your cart.")
+            return redirect('cart')
+        
+        # Update session cart with only valid items
+        request.session['cart'] = valid_cart_items
+        
+        # Create order with valid items
         order = Order.objects.create(user=request.user, total=total)
         cache = ProductCache()
         
-        # Luego agregamos los items
-        for item_id, item in cart.items():
+        # Add valid items to order
+        for item_id, item in valid_cart_items.items():
             card = Card.objects.get(id=item_id)
             quantity = item['qty']
             subtotal = card.price * quantity
@@ -159,14 +173,14 @@ def place_order(request):
                 subtotal=subtotal
             )
             
-            # Registrar la venta en Redis
+            # Record sale in Redis
             cache.record_sale(card.id, quantity)
         
-        # Limpiar el carrito
+        # Clear cart
         request.session['cart'] = {}
         request.session.modified = True
         
-        # Actualizar la caché del carrito en Redis
+        # Clear Redis cart cache
         if request.user.is_authenticated:
             redis = get_redis_connection("default")
             redis.delete(f"user_cart:{request.user.id}")
