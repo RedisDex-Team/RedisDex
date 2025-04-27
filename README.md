@@ -62,12 +62,14 @@ python3.12 manage.py runserver
 
 Para Linux:
 ```bash
-redis-server
+redis-server .\redis-conf\redis_master.conf
+redis-server .\redis-conf\redis_slave.conf
 ```
 
 Para Windows:
 ```bash
-redis-server.exe
+redis-server.exe .\redis-conf\redis_master.conf
+redis-server.exe .\redis-conf\redis_slave.conf
 ```
 
 10. Acceder al servidor:
