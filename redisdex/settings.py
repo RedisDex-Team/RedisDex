@@ -132,9 +132,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
+        "LOCATION": [
+            "redis://127.0.0.1:6379/1",  # Maestro (escritura)
+            "redis://127.0.0.1:6380/1"   # Esclavo (lectura)
+        ],
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_KWARGS": {
+                "max_connections": 100,
+                "retry_on_timeout": True
+            },
+            "READ_ONLY": True  # Esto hace que Django lea solo del esclavo
         }
     }
 }
